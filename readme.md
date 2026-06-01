@@ -10,7 +10,7 @@ A command-line Python application for tracking stock trades and calculating prof
 
 ## Roadmap
 
-- [ ] Stage 1: Core P/L logic (in progress)
+- [x] Stage 1: Core P/L logic (in progress)
 - [ ] Stage 2: Save/load trades to disk
 - [ ] Stage 3: Live prices via yfinance API
 - [ ] Stage 4: Options support / web frontend
