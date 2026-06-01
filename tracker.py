@@ -11,9 +11,9 @@ def calculate_pnl(trade):
 # print(calculate_pnl(loss_sample))   # should print -100.0
 
 def add_trade(trades, ticker, buy_price, sell_price, shares):
-    # 1. Build a new trade dict from the inputs
+    # Build a new trade dict from the inputs
     new_trade = { "ticker": ticker, "buy_price":buy_price, "sell_price": sell_price, "shares":shares}
-    # 2. Append to the trades list
+    # Append to the trades list
     trades.append(new_trade)
 
 
@@ -29,34 +29,75 @@ def view_trades(trades):
         # What trade I am working with
         number = i + 1
         pnl = calculate_pnl(trade)
-        print(f"Trade {number}: {trade["ticker"]} profit/loss ${pnl}")
+        print(f"Trade {number}: {trade["ticker"]} profit/loss ${pnl:.2f}")
 
-view_trades(trades)
+#view_trades(trades)
 
 
 def show_summary(trades):
-    # 1. Count total trades
+    # Count total trades
+    if not trades:
+        print("No trades yet - add some")
+        return 
     total_trades = len(trades)
     total_pnl = 0
     winners = 0 
     losers = 0
     for trade in trades:
-    #2. Sum up all the P/Ls
+    #Sum up all the P/Ls
         pnl = calculate_pnl(trade)
         total_pnl += pnl
-    # 3. Count winners (P/L > 0) and losers (P/L <= 0)
+    #Count winners (P/L > 0) and losers (P/L <= 0)
         if pnl > 0:
             winners += 1
         else:
             losers += 1
-    # 4. Calculate win rate as a percentage
+    # Calculate win rate as a percentage
     win_percent = (winners/ total_trades) * 100
     # Blank print 
     print()
-    # 5. Print everything
-    print(f"Total trades: {total_trades}, Winning trades:{winners}, Losing trades:{losers}, Total profit/loss:{total_pnl}, Win rate: {win_percent}%:")
+    # Print everything
+    print(f"Total trades: {total_trades}")
+    print(f"Winning trades: {winners}")
+    print(f"Losing trades: {losers}") 
+    print(f"Total profit/loss: ${total_pnl:.2f}")
+    print(f"Win rate: {win_percent:.2f}%:")
 
-show_summary(trades)
+# show_summary(trades)
+
+# menu 
+def display_menu():
+        print('1. Add trade')
+        print('2. View trades')
+        print('3. Show summary')
+        print('4. Quit')
+
+#display_menu()
+
+#user input 
+def get_user_choice():
+    choice = int(input("Enter your choice: "))
+    return choice
+
+#get_user_choice()
+
+while True:
+     display_menu()
+     choice = get_user_choice()
+
+     if choice == 1:
+        ticker = input("Ticker: ")
+        buy_price = float(input("Buy price: "))
+        sell_price = float(input("Sell price: "))
+        shares = int(input("Shares: "))
+        add_trade(trades, ticker, buy_price, sell_price, shares)
+     elif choice == 2:
+         view_trades(trades)
+     elif choice == 3:
+         show_summary(trades)
+     elif choice == 4:
+         break
+     else:
+         print("Invalid choice. Pick between 1-4")
 
 
-       
