@@ -1,0 +1,1 @@
+[{"ticker": "AAPL", "buy_price": 200.0, "sell_price": null, "shares": 10, "status": "open"}, {"ticker": "xyz", "buy_price": 10.0, "sell_price": null, "shares": 0, "status": "open"}]

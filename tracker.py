@@ -1,25 +1,55 @@
-import json 
+import json  
+import yfinance as yf # implementing live prices 
 
 # trading function running offline rn 
 
 def calculate_pnl(trade):
+    #Open position handling
+    if trade ["sell_price"] == None:
+        sell_price = yf.Ticker(trade["ticker"]).fast_info["last_price"]
+    
+    #Closed postion handling
+    else:
+        sell_price = trade["sell_price"]
     #Returns the profit/loss: (sell_price - buy_price) × shares * just set it in a that it can be used later
-    return (trade["sell_price"] - trade["buy_price"]) * trade ["shares"]
+    return (sell_price - trade["buy_price"]) * trade ["shares"]
 
 
-def add_trade(trades, ticker, buy_price, sell_price, shares):
+def add_trade(trades, ticker, buy_price, shares):
+    #Bad ticker handling
+    while True:
+        price = yf.Ticker(ticker).fast_info["last_price"]
+        if price is not None:
+            break
+        else:
+            print ("Invalid ticker")
+            ticker = input("Ticker: ")
+    # Open/Close positions
+    while True:
+        status = input("Open/Closed Positon:" ).lower()
+        if status == "open":
+            sell_price = None
+            break
+        elif status == "closed":
+            try:
+                sell_price = float(input("Enter sell price:"))
+                break
+            except ValueError:
+                print("Sell price must only have numbers")
+        else:
+            print("Invalid choice, only open or closed allowed")
     # Build a new trade dict from the inputs
-    new_trade = { "ticker": ticker, "buy_price":buy_price, "sell_price": sell_price, "shares":shares}
+    new_trade = { "ticker": ticker, "buy_price":buy_price, "sell_price":sell_price, "shares":shares, "status":status}
     # Append to the trades list
     trades.append(new_trade)
-
+    
 
 def view_trades(trades):
     for i , trade in enumerate(trades):
         # What trade I am working with
         number = i + 1
         pnl = calculate_pnl(trade)
-        print(f"Trade {number}: {trade["ticker"]} profit/loss ${pnl:.2f}")
+        print(f"Trade {number}: {trade["ticker"]} profit/loss ${pnl:.2f}. {trade["status"]}")
 
 #view_trades(trades)
 
@@ -64,10 +94,15 @@ def display_menu():
 
 #display_menu()
 
-#user input 
+#user input fixed to handle typing in non ints
 def get_user_choice():
-    choice = int(input("Enter your choice: "))
-    return choice
+    while True:
+        try:
+            choice = int(input("Enter your choice: "))
+            return choice
+        except ValueError:
+            print("Enter a valid choice!!")
+
 
 #get_user_choice()
 
@@ -94,9 +129,8 @@ while True:
      if choice == 1:
         ticker = input("Ticker: ")
         buy_price = float(input("Buy price: "))
-        sell_price = float(input("Sell price: "))
         shares = int(input("Shares: "))
-        add_trade(trades, ticker, buy_price, sell_price, shares)
+        add_trade(trades, ticker, buy_price, shares)
         save_trades(trades)
      elif choice == 2:
          view_trades(trades)
@@ -106,5 +140,7 @@ while True:
          break
      else:
          print("Invalid choice. Pick between 1-4")
+
+    
 
 
