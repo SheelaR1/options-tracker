@@ -86,7 +86,7 @@ def load_trades():
         return []
 
 trades = load_trades()   # changed to load_trades function for stage 2
-1
+
 while True:
      display_menu()
      choice = get_user_choice()
