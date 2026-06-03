@@ -27,8 +27,8 @@ A command-line Python application for tracking stock trades and calculating prof
 
 ## Tech
 
-Python 3
-yfinance
+- Python 3
+- yfinance
 
 ## Run it
 
