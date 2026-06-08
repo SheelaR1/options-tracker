@@ -1,6 +1,6 @@
 # Options Tracker
 
-A command-line Python application for tracking stock trades and calculating profit/loss.
+A command-line Python application for tracking stock options/trades and calculating profit/loss.
 
 ## Features
 
@@ -13,16 +13,16 @@ A command-line Python application for tracking stock trades and calculating prof
 - Summary stats: total P/L, win rate, winners/losers count
 - Persistent storage via JSON
 - Input validation across all user-facing prompts
+- Options support 
 
 ## Roadmap
 
-- [x] Stage 1: Core P/L logic (in progress)
+- [x] Stage 1: Core P/L logic
 - [x] Stage 2: Save/load trades to disk
 - [x] Stage 3: Live prices via yfinance API
-- [ ] Stage 4: Options support / web frontend
+- [ ] Stage 4: Options support / web frontend(in progress)
 
 ## Future Plans
-- Live options pricing via yfinance option chains
 - Automated trading via broker API integration
 
 ## Tech
@@ -32,7 +32,7 @@ A command-line Python application for tracking stock trades and calculating prof
 
 ## Run it
 
-```python
+```bash
 pip install yfinance
 python tracker.py
 ```
