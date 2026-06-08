@@ -7,15 +7,47 @@ def calculate_pnl(trade):
     #Open position handling
     if trade ["sell_price"] == None:
         sell_price = yf.Ticker(trade["ticker"]).fast_info["last_price"]
-    
     #Closed postion handling
     else:
         sell_price = trade["sell_price"]
-    #Returns the profit/loss: (sell_price - buy_price) × shares * just set it in a that it can be used later
-    return (sell_price - trade["buy_price"]) * trade ["shares"]
+    #Returns the profit/loss: (sell_price - buy_price) × shares (This is for shares)
+    if trade["instrument_type"] == "stock":
+        return (sell_price - trade["buy_price"]) * trade ["shares"]
+    #Returns the profit/loss: (sell_price - buy_price) × contracts × 100 (This is for options)
+    elif trade["instrument_type"] == "option":
+        return (sell_price - trade["buy_price"]) * trade["shares"] * 100
+    
 
 
 def add_trade(trades, ticker, buy_price):
+    #Stock/Option handling 
+    while True:
+        instrument_type = input("Stock or Option: ").lower()
+        if instrument_type == "stock":
+            break
+        elif instrument_type == "option":
+            break
+        else:
+            print("Invalid choice, only stock or option allowed")
+    option_type = None
+    strike_price = None 
+    expiration = None
+    if instrument_type == "option":
+        while True:
+            option_type = input("Call or Put: ").lower()
+            if option_type == 'call':
+                break
+            elif option_type == 'put':
+                break
+            else:
+                print("Option can only be a call or put")
+        while True:
+            try:
+                strike_price = float(input("Strike price: "))
+                break
+            except ValueError:
+                print("strike_price must be numbers")
+        expiration = input("Expiration date (YYYY-MM-DD): ")
     #Bad ticker handling
     while True:
         price = yf.Ticker(ticker).fast_info["last_price"]
@@ -24,10 +56,12 @@ def add_trade(trades, ticker, buy_price):
         else:
             print ("Invalid ticker")
             ticker = input("Ticker: ")
+    label = "Contracts" if instrument_type == "option" else "Shares"
     # No shares handling 
     while True:
         try:
-            shares = float(input("Shares: "))
+            #Updated to handle both stocks/options
+            shares = float(input(f"{label}:"))
             if shares > 0:
                 break
             else:
@@ -49,7 +83,7 @@ def add_trade(trades, ticker, buy_price):
         else:
             print("Invalid choice, only open or closed allowed")
     # Build a new trade dict from the inputs
-    new_trade = { "ticker": ticker, "buy_price":buy_price, "sell_price":sell_price, "shares":shares, "status":status}
+    new_trade = { "ticker": ticker, "buy_price":buy_price, "sell_price":sell_price, "shares":shares, "status":status, "instrument_type":instrument_type, "option_type": option_type, "strike_price": strike_price, "expiration": expiration}
     # Append to the trades list
     trades.append(new_trade)
     
