@@ -1,12 +1,27 @@
 import json  
 import yfinance as yf # implementing live prices 
+from datetime import datetime # expiration dates handling
 
 # trading function running offline rn 
 
+# Helper Function for options(do not want to deal with nested statements)
+def get_live_option_price(trade):
+    chain = yf.Ticker(trade["ticker"]).option_chain(trade["expiration"])
+    if trade["option_type"] == "call":
+         table = chain.calls
+    else:
+        table = chain.puts
+    row = table[table["strike"] == trade["strike_price"]]
+    return row["lastPrice"].iloc[0]
+
+# Calculating Profit/Loss
 def calculate_pnl(trade):
     #Open position handling
     if trade ["sell_price"] == None:
-        sell_price = yf.Ticker(trade["ticker"]).fast_info["last_price"]
+        if trade["instrument_type"] == "stock":
+            sell_price = yf.Ticker(trade["ticker"]).fast_info["last_price"]
+        else:
+            sell_price = get_live_option_price(trade)
     #Closed postion handling
     else:
         sell_price = trade["sell_price"]
@@ -17,37 +32,40 @@ def calculate_pnl(trade):
     elif trade["instrument_type"] == "option":
         return (sell_price - trade["buy_price"]) * trade["shares"] * 100
     
-
+# Validator (Helper function)
+def get_validated_input(prompt,cast_type,valid_options):
+    while True:
+        try:
+            validated_input = input(prompt)
+            result = cast_type(validated_input)
+            if valid_options is not None:
+                if result in valid_options:
+                    return result
+                else:
+                    print("Please enter a valid option")
+            else:
+                return result
+        except ValueError:
+            print("Please input a valid prompt(numbers/alphabets)")
 
 def add_trade(trades, ticker, buy_price):
     #Stock/Option handling 
-    while True:
-        instrument_type = input("Stock or Option: ").lower()
-        if instrument_type == "stock":
-            break
-        elif instrument_type == "option":
-            break
-        else:
-            print("Invalid choice, only stock or option allowed")
+    instrument_type = get_validated_input("Stock or Option: ", lambda x: x.lower(), ["stock", "option"])
     option_type = None
     strike_price = None 
     expiration = None
     if instrument_type == "option":
+        option_type = get_validated_input("Call or Put: ", lambda x: x.lower(), ["call", "put"])
+        #Strike price 
+        strike_price = get_validated_input("Strike price: ", float, None)
+        #Expiration 
         while True:
-            option_type = input("Call or Put: ").lower()
-            if option_type == 'call':
-                break
-            elif option_type == 'put':
+            expiration = get_validated_input("Enter expiration date(YYYY-MM-DD): ", lambda x: datetime.strptime(x, "%Y-%m-%d"), None)
+            if expiration > datetime.now():
                 break
             else:
-                print("Option can only be a call or put")
-        while True:
-            try:
-                strike_price = float(input("Strike price: "))
-                break
-            except ValueError:
-                print("strike_price must be numbers")
-        expiration = input("Expiration date (YYYY-MM-DD): ")
+                print("Enter a valid expiration(YYYY-MM-DD)")
+        expiration = expiration.strftime("%Y-%m-%d")
     #Bad ticker handling
     while True:
         price = yf.Ticker(ticker).fast_info["last_price"]
@@ -57,31 +75,14 @@ def add_trade(trades, ticker, buy_price):
             print ("Invalid ticker")
             ticker = input("Ticker: ")
     label = "Contracts" if instrument_type == "option" else "Shares"
-    # No shares handling 
-    while True:
-        try:
-            #Updated to handle both stocks/options
-            shares = float(input(f"{label}:"))
-            if shares > 0:
-                break
-            else:
-                print ("You cannot have zero shares or negative shares.")
-        except ValueError:
-            print("Shares are numbers only")
+    # No shares handling (with a helper now)
+    shares = get_validated_input("Enter the number of shares/contracts: ", float, None)
     # Open/Close positions
-    while True:
-        status = input("Open/Closed Positon:" ).lower()
-        if status == "open":
-            sell_price = None
-            break
-        elif status == "closed":
-            try:
-                sell_price = float(input("Enter sell price:"))
-                break
-            except ValueError:
-                print("Sell price must only have numbers")
-        else:
-            print("Invalid choice, only open or closed allowed")
+    status = get_validated_input("Open or Closed Position:" , lambda x: x.lower(), ["open", "closed"])
+    if status == 'closed':
+        sell_price = get_validated_input("Enter the sell price: ", float, None)
+    else:
+        sell_price = None
     # Build a new trade dict from the inputs
     new_trade = { "ticker": ticker, "buy_price":buy_price, "sell_price":sell_price, "shares":shares, "status":status, "instrument_type":instrument_type, "option_type": option_type, "strike_price": strike_price, "expiration": expiration}
     # Append to the trades list
@@ -114,33 +115,16 @@ def close_position(trades):
             number = i +1
             pnl = calculate_pnl(trade)
             print (f"Trade {number}: {trade["ticker"]} profit/loss ${pnl:.2f}. {trade["status"]}")
-        #Error handling
-        while True:
-            try: 
-                choice = int(input("Enter a number: "))
-                if 1 <= choice <= len(open_trades):
-                    break
-                else: 
-                    print("Number out of range.")
-            except ValueError:
-                print ("Choice must be a number. ")
-        # Trying to find an open position and then closing it
-        while True: 
-            try:    
-                sell_price = float(input("Enter a sell price: "))
-                break
-            except ValueError:
-                    print("Sell price must be numbers.")
+        #Error handling (was updated after helper function was made)
+        choice = get_validated_input("Enter a choice:", int, list(range(1, len(open_trades) + 1)))
+        #Updated with the use of helper finction
+        sell_price = get_validated_input("Enter sell price: ", float , None)
         selected = open_trades[choice - 1]
         original_index, _ = selected
         trades [original_index]["sell_price"] = sell_price
         trades [original_index] ["status"] = "closed"   
     else:
         print("No open trades.")
-
-
-        
-
 
 def show_summary(trades):
     # Count total trades
@@ -171,8 +155,6 @@ def show_summary(trades):
     print(f"Total profit/loss: ${total_pnl:.2f}")
     print(f"Win rate: {win_percent:.2f}%:")
 
-# show_summary(trades)
-
 # menu 
 def display_menu():
         print('1. Add trade')
@@ -181,22 +163,6 @@ def display_menu():
         print('4. Close position')
         print('5. Quit')
        
-
-#display_menu()
-
-#user input fixed to handle typing in non ints
-def get_user_choice():
-    while True:
-        try:
-            choice = int(input("Enter your choice: "))
-            return choice
-        except ValueError:
-            print("Enter a valid choice!!")
-
-
-#get_user_choice()
-
-
 # save trades from memory 
 def save_trades(trades):
     with open("trades.json", 'w') as f:
@@ -214,11 +180,11 @@ trades = load_trades()   # changed to load_trades function for stage 2
 
 while True:
      display_menu()
-     choice = get_user_choice()
-
+     #updated this line once helper was writeen
+     choice = get_validated_input("Enter a choice: ", int, list(range(1, 6)))
      if choice == 1:
         ticker = input("Ticker: ")
-        buy_price = float(input("Buy price: "))
+        buy_price = get_validated_input("Enter a buy price: ", float, None)
         add_trade(trades, ticker, buy_price)
         save_trades(trades)
      elif choice == 2:
@@ -230,8 +196,7 @@ while True:
          save_trades(trades)
      elif choice == 5:
          break
-     else:
-         print("Invalid choice. Pick between 1-5")
+    
 
     
 

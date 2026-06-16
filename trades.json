@@ -1,1 +1,1 @@
-[{"ticker": "aapl", "buy_price": 200.0, "sell_price": 300.0, "shares": 10.0, "status": "closed", "instrument_type": "stock", "option_type": null, "strike_price": null, "expiration": null}, {"ticker": "aapl", "buy_price": 200.0, "sell_price": 300.0, "shares": 10.0, "status": "closed", "instrument_type": "option", "option_type": "call", "strike_price": 250.0, "expiration": "2000"}]
+[{"ticker": "AAPL", "buy_price": 210.0, "sell_price": null, "shares": 11.0, "status": "open", "instrument_type": "stock", "option_type": null, "strike_price": null, "expiration": null}]
