@@ -12,7 +12,10 @@ def get_live_option_price(trade):
     else:
         table = chain.puts
     row = table[table["strike"] == trade["strike_price"]]
-    return row["lastPrice"].iloc[0]
+    if row.empty:
+        return None
+    else:
+        return row["lastPrice"].iloc[0]
 
 # Calculating Profit/Loss
 def calculate_pnl(trade):
@@ -25,6 +28,8 @@ def calculate_pnl(trade):
     #Closed postion handling
     else:
         sell_price = trade["sell_price"]
+    if sell_price is None:
+        return None
     #Returns the profit/loss: (sell_price - buy_price) × shares (This is for shares)
     if trade["instrument_type"] == "stock":
         return (sell_price - trade["buy_price"]) * trade ["shares"]
@@ -68,13 +73,13 @@ def add_trade(trades, ticker, buy_price):
         expiration = expiration.strftime("%Y-%m-%d")
     #Bad ticker handling
     while True:
-        price = yf.Ticker(ticker).fast_info["last_price"]
-        if price is not None:
-            break
-        else:
-            print ("Invalid ticker")
+        try:
+            price = yf.Ticker(ticker).fast_info["last_price"]
+            if price is not None:
+                break
+        except Exception:
+            print("Invalid ticker")
             ticker = input("Ticker: ")
-    label = "Contracts" if instrument_type == "option" else "Shares"
     # No shares handling (with a helper now)
     shares = get_validated_input("Enter the number of shares/contracts: ", float, None)
     # Open/Close positions
@@ -99,8 +104,17 @@ def view_trades(trades):
             sell_display = "Live"
         else:
             sell_display = f"${trade['sell_price']:.2f}"
+        if pnl is None:
+            pnl_display = "Cannot find contract"
+        else: 
+            pnl_display = f"${pnl:.2f}"
+        # Format handling 
+        if trade["instrument_type"] == "stock":
+            detail = trade ["ticker"]
+        else:
+            detail = f"{trade['ticker']} {trade['option_type']} ${trade['strike_price']} exp {trade['expiration']}"
         # changed to show buy price/sell price
-        print(f"Trade {number}: {trade['ticker']} | Buy: ${trade['buy_price']:.2f} | Sell: {sell_display} | P&L: ${pnl:.2f} | {trade['status']}")
+        print(f"Trade {number}: {detail} | Buy: ${trade['buy_price']:.2f} | Sell: {sell_display} | P&L: {pnl_display} | {trade['status']}")
 
 #view_trades(trades)
 
@@ -131,19 +145,25 @@ def show_summary(trades):
     if not trades:
         print("No trades yet - add some")
         return 
-    total_trades = len(trades)
     total_pnl = 0
     winners = 0 
     losers = 0
     for trade in trades:
     #Sum up all the P/Ls
-        pnl = calculate_pnl(trade)
+        if trade["status"] != "closed":
+            continue
+        pnl = calculate_pnl(trade) 
         total_pnl += pnl
     #Count winners (P/L > 0) and losers (P/L <= 0)
         if pnl > 0:
             winners += 1
         else:
             losers += 1
+    total_trades = winners + losers
+    # Safeguard for zero 
+    if total_trades == 0:
+        print("No closed trades to summarize")
+        return
     # Calculate win rate as a percentage
     win_percent = (winners/ total_trades) * 100
     # Blank print 

@@ -1,1 +1,1 @@
-[{"ticker": "AAPL", "buy_price": 210.0, "sell_price": null, "shares": 11.0, "status": "open", "instrument_type": "stock", "option_type": null, "strike_price": null, "expiration": null}]
+[{"ticker": "AAPL", "buy_price": 210.0, "sell_price": 280.0, "shares": 11.0, "status": "closed", "instrument_type": "stock", "option_type": null, "strike_price": null, "expiration": null}, {"ticker": "TSLA", "buy_price": 280.0, "sell_price": null, "shares": 10.0, "status": "open", "instrument_type": "stock", "option_type": null, "strike_price": null, "expiration": null}]
