@@ -20,7 +20,8 @@ A command-line Python application for tracking stock options/trades and calculat
 - [x] Stage 1: Core P/L logic
 - [x] Stage 2: Save/load trades to disk
 - [x] Stage 3: Live prices via yfinance API
-- [ ] Stage 4: Options support / web frontend(in progress)
+- [x] Stage 4: Options support (calls/puts, strike, expiration, live option pricing)
+- [ ] Stage 5: Web frontend (in progress)
 
 ## Future Plans
 - Automated trading via broker API integration
@@ -35,6 +36,13 @@ A command-line Python application for tracking stock options/trades and calculat
 ```bash
 pip install yfinance
 python tracker.py
+```
+## Example Output
+
+```
+Enter a choice: 2
+Trade 1: NVDA call $240.0 exp 2026-06-22 | Buy: $210.00 | Sell: $240.00 | P&L: $15000.00 | closed
+Trade 2: AAPL | Buy: $180.00 | Sell: Live | P&L: $1164.20 | open
 ```
 
 ## Status
