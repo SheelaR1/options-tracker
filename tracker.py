@@ -6,16 +6,19 @@ from datetime import datetime # expiration dates handling
 
 # Helper Function for options(do not want to deal with nested statements)
 def get_live_option_price(trade):
-    chain = yf.Ticker(trade["ticker"]).option_chain(trade["expiration"])
-    if trade["option_type"] == "call":
-         table = chain.calls
-    else:
-        table = chain.puts
-    row = table[table["strike"] == trade["strike_price"]]
-    if row.empty:
+    try:
+        chain = yf.Ticker(trade["ticker"]).option_chain(trade["expiration"])
+        if trade["option_type"] == "call":
+            table = chain.calls
+        else:
+            table = chain.puts
+        row = table[table["strike"] == trade["strike_price"]]
+        if row.empty:
+            return None
+        else:
+            return row["lastPrice"].iloc[0]
+    except Exception:
         return None
-    else:
-        return row["lastPrice"].iloc[0]
 
 # Calculating Profit/Loss
 def calculate_pnl(trade):
@@ -55,22 +58,10 @@ def get_validated_input(prompt,cast_type,valid_options):
 
 def add_trade(trades, ticker, buy_price):
     #Stock/Option handling 
-    instrument_type = get_validated_input("Stock or Option: ", lambda x: x.lower(), ["stock", "option"])
+    instrument_type = get_validated_input("Stock or Option: ", lambda x: x.strip().lower(), ["stock", "option"])
     option_type = None
     strike_price = None 
     expiration = None
-    if instrument_type == "option":
-        option_type = get_validated_input("Call or Put: ", lambda x: x.lower(), ["call", "put"])
-        #Strike price 
-        strike_price = get_validated_input("Strike price: ", float, None)
-        #Expiration 
-        while True:
-            expiration = get_validated_input("Enter expiration date(YYYY-MM-DD): ", lambda x: datetime.strptime(x, "%Y-%m-%d"), None)
-            if expiration > datetime.now():
-                break
-            else:
-                print("Enter a valid expiration(YYYY-MM-DD)")
-        expiration = expiration.strftime("%Y-%m-%d")
     #Bad ticker handling
     while True:
         try:
@@ -80,14 +71,33 @@ def add_trade(trades, ticker, buy_price):
         except Exception:
             print("Invalid ticker")
             ticker = input("Ticker: ")
-    # No shares handling (with a helper now)
-    shares = get_validated_input("Enter the number of shares/contracts: ", float, None)
     # Open/Close positions
-    status = get_validated_input("Open or Closed Position:" , lambda x: x.lower(), ["open", "closed"])
+    status = get_validated_input("Open or Closed Position:" , lambda x: x.strip().lower(), ["open", "closed"])
     if status == 'closed':
         sell_price = get_validated_input("Enter the sell price: ", float, None)
     else:
         sell_price = None
+    if instrument_type == "option":
+            option_type = get_validated_input("Call or Put: ", lambda x: x.strip().lower(), ["call", "put"])
+            #Strike price 
+            strike_price = get_validated_input("Strike price: ", float, None)
+            #Expiration 
+            valid_expirations = yf.Ticker(ticker).options
+            while True:
+                expiration = get_validated_input("Enter expiration date(YYYY-MM-DD): ", lambda x: datetime.strptime(x, "%Y-%m-%d"), None)
+                if status == "closed":
+                    expiration = expiration.strftime("%Y-%m-%d")
+                    break
+                if expiration < datetime.now():
+                    print("Enter a valid expiration(must be in the future)")
+                    continue
+                expiration = expiration.strftime("%Y-%m-%d")
+                if expiration not in valid_expirations:
+                    print("Not a valid contract expiration date")
+                    continue
+                break
+    # No shares handling (with a helper now)
+    shares = get_validated_input("Enter the number of shares/contracts: ", float, None)
     # Build a new trade dict from the inputs
     new_trade = { "ticker": ticker, "buy_price":buy_price, "sell_price":sell_price, "shares":shares, "status":status, "instrument_type":instrument_type, "option_type": option_type, "strike_price": strike_price, "expiration": expiration}
     # Append to the trades list
@@ -115,8 +125,6 @@ def view_trades(trades):
             detail = f"{trade['ticker']} {trade['option_type']} ${trade['strike_price']} exp {trade['expiration']}"
         # changed to show buy price/sell price
         print(f"Trade {number}: {detail} | Buy: ${trade['buy_price']:.2f} | Sell: {sell_display} | P&L: {pnl_display} | {trade['status']}")
-
-#view_trades(trades)
 
 # Close open positions
 def close_position(trades):
