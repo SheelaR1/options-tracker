@@ -56,7 +56,23 @@ def get_validated_input(prompt,cast_type,valid_options):
         except ValueError:
             print("Please input a valid prompt(numbers/alphabets)")
 
-def add_trade(trades, ticker, buy_price):
+def add_trade(trades, ticker, buy_price, instrument_type, shares, status,
+              sell_price, option_type=None, strike_price=None, expiration=None):
+    new_trade = {
+        "ticker": ticker,
+        "buy_price": buy_price,
+        "sell_price": sell_price,
+        "shares": shares,
+        "status": status,
+        "instrument_type": instrument_type,
+        "option_type": option_type,
+        "strike_price": strike_price,
+        "expiration": expiration,
+    }
+    trades.append(new_trade)
+
+# refactoring for web
+def add_trade_cli(trades, ticker, buy_price):
     #Stock/Option handling 
     instrument_type = get_validated_input("Stock or Option: ", lambda x: x.strip().lower(), ["stock", "option"])
     option_type = None
@@ -98,10 +114,7 @@ def add_trade(trades, ticker, buy_price):
                 break
     # No shares handling (with a helper now)
     shares = get_validated_input("Enter the number of shares/contracts: ", float, None)
-    # Build a new trade dict from the inputs
-    new_trade = { "ticker": ticker, "buy_price":buy_price, "sell_price":sell_price, "shares":shares, "status":status, "instrument_type":instrument_type, "option_type": option_type, "strike_price": strike_price, "expiration": expiration}
-    # Append to the trades list
-    trades.append(new_trade)
+    add_trade(trades, ticker, buy_price, instrument_type, shares, status, sell_price, option_type, strike_price, expiration)
     
 
 def view_trades(trades):
@@ -126,27 +139,27 @@ def view_trades(trades):
         # changed to show buy price/sell price
         print(f"Trade {number}: {detail} | Buy: ${trade['buy_price']:.2f} | Sell: {sell_display} | P&L: {pnl_display} | {trade['status']}")
 
+def get_open_trades(trades):
+    return [(i, t) for i, t in enumerate(trades) if t["status"] == "open"]
+
+def close_trade(trades, original_index, sell_price):
+    trades[original_index]["sell_price"] = sell_price
+    trades[original_index]["status"] = "closed"
+
 # Close open positions
-def close_position(trades):
-    open_trades = []
-    for index, trade in enumerate(trades):
-        if trade["status"] == "open":
-            open_trades.append((index, trade))
-    if open_trades:
-        for i, (index, trade) in enumerate(open_trades):
-            number = i +1
-            pnl = calculate_pnl(trade)
-            print (f"Trade {number}: {trade["ticker"]} profit/loss ${pnl:.2f}. {trade["status"]}")
-        #Error handling (was updated after helper function was made)
-        choice = get_validated_input("Enter a choice:", int, list(range(1, len(open_trades) + 1)))
-        #Updated with the use of helper finction
-        sell_price = get_validated_input("Enter sell price: ", float , None)
-        selected = open_trades[choice - 1]
-        original_index, _ = selected
-        trades [original_index]["sell_price"] = sell_price
-        trades [original_index] ["status"] = "closed"   
-    else:
+def close_position_cli(trades):
+    open_trades = get_open_trades(trades)
+    if not open_trades:
         print("No open trades.")
+        return
+    for i, (index, trade) in enumerate(open_trades):
+        number = i + 1
+        pnl = calculate_pnl(trade)
+        print(f"Trade {number}: {trade['ticker']} profit/loss ${pnl:.2f}. {trade['status']}")
+    choice = get_validated_input("Enter a choice:", int, list(range(1, len(open_trades) + 1)))
+    sell_price = get_validated_input("Enter sell price: ", float, None)
+    original_index, _ = open_trades[choice - 1]
+    close_trade(trades, original_index, sell_price)
 
 def show_summary(trades):
     # Count total trades
@@ -213,14 +226,14 @@ while True:
      if choice == 1:
         ticker = input("Ticker: ")
         buy_price = get_validated_input("Enter a buy price: ", float, None)
-        add_trade(trades, ticker, buy_price)
+        add_trade_cli(trades, ticker, buy_price)
         save_trades(trades)
      elif choice == 2:
          view_trades(trades)
      elif choice == 3:
          show_summary(trades)
      elif choice == 4:
-         close_position(trades)
+         close_position_cli(trades)
          save_trades(trades)
      elif choice == 5:
          break
