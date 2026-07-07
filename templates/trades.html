@@ -1,29 +1,27 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Options Tracker - Trades</title>
-</head>
-<body>
-    <h1>Trades</h1>
-    <table border="1">
-        <tr>
-            <th>Ticker</th>
-            <th>Type</th>
-            <th>Buy Price</th>
-            <th>Sell Price</th>
-            <th>P&L</th>
-            <th>Status</th>
-        </tr>
-        {% for trade in trades %}
-        <tr>
-            <td>{{ trade.ticker }}</td>
-            <td>{{ trade.instrument_type }}</td>
-            <td>${{ trade.buy_price }}</td>
-            <td>{% if trade.sell_price %}${{ trade.sell_price }}{% else %}Live{% endif %}</td>
-            <td>{% if trade.pnl is not none %}${{ trade.pnl }}{% else %}Cannot find contract{% endif %}</td>
-            <td>{{ trade.status }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Trades - Options Tracker{% endblock %}
+{% block content %}
+<h1>Trades</h1>
+<table>
+    <tr>
+        <th>Ticker</th>
+        <th>Type</th>
+        <th>Buy Price</th>
+        <th>Sell Price</th>
+        <th>P&L</th>
+        <th>Status</th>
+    </tr>
+    {% for trade in trades %}
+    <tr>
+        <td>{{ trade.ticker }}</td>
+        <td style="text-transform: capitalize;">{{ trade.instrument_type }}</td>
+        <td>${{ trade.buy_price }}</td>
+        <td>{% if trade.sell_price %}${{ trade.sell_price }}{% else %}Live{% endif %}</td>
+        <td class="{% if trade.pnl is not none %}{% if trade.pnl >= 0 %}positive{% else %}negative{% endif %}{% endif %}">
+            {% if trade.pnl is not none %}${{ trade.pnl }}{% else %}Cannot find contract{% endif %}
+        </td>
+        <td style="text-transform: capitalize;">{{ trade.status }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

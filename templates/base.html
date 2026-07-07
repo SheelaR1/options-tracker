@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}Options Tracker{% endblock %}</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #0f1115;
+            color: #e6e6e6;
+            margin: 0;
+            padding: 0;
+        }
+        nav {
+            background-color: #1a1d24;
+            padding: 16px 32px;
+            border-bottom: 1px solid #2a2d35;
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+        nav a {
+            color: #a0a8b8;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        nav a:hover {
+            color: #ffffff;
+        }
+        nav .brand {
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 16px;
+            margin-right: 16px;
+        }
+        main {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 24px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #1a1d24;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #3a3d48;
+            border-right: 1px solid #22252d;
+            font-size: 14px;
+        }
+        th:last-child, td:last-child {
+            border-right: none;
+        }
+        th {
+            background-color: #22252d;
+            color: #a0a8b8;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .positive {
+            color: #4ade80;
+        }
+        .negative {
+            color: #f87171;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <span class="brand">Options Tracker</span>
+        <a href="/trades">Trades</a>
+        <a href="/add">Add Trade</a>
+        <a href="/close">Close Position</a>
+        <a href="/summary">Summary</a>
+    </nav>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
