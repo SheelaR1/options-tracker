@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Summary - Options Tracker{% endblock %}
+{% block content %}
+<h1>Summary</h1>
+{% if stats is none %}
+<p>No closed trades to summarize.</p>
+{% else %}
+<table>
+    <tr>
+        <th>Total Trades</th>
+        <th>Winners</th>
+        <th>Losers</th>
+        <th>Total P&L</th>
+        <th>Win Rate</th>
+    </tr>
+    <tr>
+        <td>{{ stats.total_trades }}</td>
+        <td>{{ stats.winners }}</td>
+        <td>{{ stats.losers }}</td>
+        <td class="{% if stats.total_pnl >= 0 %}positive{% else %}negative{% endif %}">${{ stats.total_pnl }}</td>
+        <td>{{ stats.win_percent }}%</td>
+    </tr>
+</table>
+{% endif %}
+{% endblock %}

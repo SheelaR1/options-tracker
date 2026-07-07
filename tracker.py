@@ -165,6 +165,33 @@ def close_position_cli(trades):
     original_index, _ = open_trades[choice - 1]
     close_trade(trades, original_index, sell_price)
 
+def get_summary(trades):
+    if not trades:
+        return None
+    total_pnl = 0
+    winners = 0
+    losers = 0
+    for trade in trades:
+        if trade["status"] != "closed":
+            continue
+        pnl = calculate_pnl(trade)
+        total_pnl += pnl
+        if pnl > 0:
+            winners += 1
+        else:
+            losers += 1
+    total_trades = winners + losers
+    if total_trades == 0:
+        return None
+    win_percent = (winners / total_trades) * 100
+    return {
+        "total_trades": total_trades,
+        "winners": winners,
+        "losers": losers,
+        "total_pnl": round(total_pnl, 2),
+        "win_percent": round(win_percent, 2),
+    }
+
 def show_summary(trades):
     # Count total trades
     if not trades:
