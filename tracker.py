@@ -155,7 +155,11 @@ def close_position_cli(trades):
     for i, (index, trade) in enumerate(open_trades):
         number = i + 1
         pnl = calculate_pnl(trade)
-        print(f"Trade {number}: {trade['ticker']} profit/loss ${pnl:.2f}. {trade['status']}")
+        if pnl is None:
+            pnl_display = "Cannot find contract"
+        else:
+            pnl_display = f"${pnl:.2f}"
+        print(f"Trade {number}: {trade['ticker']} profit/loss {pnl_display}. {trade['status']}")
     choice = get_validated_input("Enter a choice:", int, list(range(1, len(open_trades) + 1)))
     sell_price = get_validated_input("Enter sell price: ", float, None)
     original_index, _ = open_trades[choice - 1]
