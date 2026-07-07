@@ -221,28 +221,28 @@ def load_trades():
     except FileNotFoundError:
         return []
 
-trades = load_trades()   # changed to load_trades function for stage 2
+if __name__ == "__main__":
+    trades = load_trades()
+    while True:
+        display_menu()
+        #updated this line once helper was writeen
+        choice = get_validated_input("Enter a choice: ", int, list(range(1, 6)))
+        if choice == 1:
+            ticker = input("Ticker: ")
+            buy_price = get_validated_input("Enter a buy price: ", float, None)
+            add_trade_cli(trades, ticker, buy_price)
+            save_trades(trades)
+        elif choice == 2:
+            view_trades(trades)
+        elif choice == 3:
+            show_summary(trades)
+        elif choice == 4:
+            close_position_cli(trades)
+            save_trades(trades)
+        elif choice == 5:
+            break
+        
 
-while True:
-     display_menu()
-     #updated this line once helper was writeen
-     choice = get_validated_input("Enter a choice: ", int, list(range(1, 6)))
-     if choice == 1:
-        ticker = input("Ticker: ")
-        buy_price = get_validated_input("Enter a buy price: ", float, None)
-        add_trade_cli(trades, ticker, buy_price)
-        save_trades(trades)
-     elif choice == 2:
-         view_trades(trades)
-     elif choice == 3:
-         show_summary(trades)
-     elif choice == 4:
-         close_position_cli(trades)
-         save_trades(trades)
-     elif choice == 5:
-         break
-    
-
-    
+        
 
 
