@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Add Trade - Options Tracker{% endblock %}
+{% block content %}
+<h1>Add Trade</h1>
+<form method="post" action="/add">
+    <label>Ticker</label><br>
+    <input type="text" name="ticker" required><br><br>
+
+    <label>Buy Price</label><br>
+    <input type="number" step="0.01" name="buy_price" required><br><br>
+
+    <label>Instrument Type</label><br>
+    <select name="instrument_type" required>
+        <option value="stock">Stock</option>
+        <option value="option">Option</option>
+    </select><br><br>
+
+    <label>Shares / Contracts</label><br>
+    <input type="number" step="0.01" name="shares" required><br><br>
+
+    <label>Status</label><br>
+    <select name="status" required>
+        <option value="open">Open</option>
+        <option value="closed">Closed</option>
+    </select><br><br>
+
+    <label>Sell Price (only if closed)</label><br>
+    <input type="number" step="0.01" name="sell_price"><br><br>
+
+    <label>Option Type (call/put, only if option)</label><br>
+    <input type="text" name="option_type"><br><br>
+
+    <label>Strike Price (only if option)</label><br>
+    <input type="number" step="0.01" name="strike_price"><br><br>
+
+    <label>Expiration YYYY-MM-DD (only if option)</label><br>
+    <input type="text" name="expiration"><br><br>
+
+    <button type="submit">Add Trade</button>
+</form>
+{% endblock %}
