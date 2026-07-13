@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Close Position - Options Tracker{% endblock %}
+{% block content %}
+<h1>Close Position</h1>
+{% if not open_trades %}
+<p>No open trades.</p>
+{% else %}
+<table>
+    <tr>
+        <th>Ticker</th>
+        <th>Type</th>
+        <th>Buy Price</th>
+        <th>P&L</th>
+        <th>Sell Price</th>
+        <th></th>
+    </tr>
+    {% for trade in open_trades %}
+    <tr>
+        <td>{{ trade.ticker }}</td>
+        <td style="text-transform: capitalize;">{{ trade.instrument_type }}</td>
+        <td>${{ trade.buy_price }}</td>
+        <td class="{% if trade.pnl is not none %}{% if trade.pnl >= 0 %}positive{% else %}negative{% endif %}{% endif %}">
+            {% if trade.pnl is not none %}${{ trade.pnl }}{% else %}Cannot find contract{% endif %}
+        </td>
+        <td>
+            <form method="post" action="/close" style="display: flex; gap: 8px;">
+                <input type="hidden" name="index" value="{{ trade.index }}">
+                <input type="number" step="0.01" name="sell_price" placeholder="Sell price" required>
+                <button type="submit">Close</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+{% endblock %}

@@ -2,40 +2,53 @@
 {% block title %}Add Trade - Options Tracker{% endblock %}
 {% block content %}
 <h1>Add Trade</h1>
+{% if error %}
+<p style="color: #f87171;">{{ error }}</p>
+{% endif %}
 <form method="post" action="/add">
     <label>Ticker</label><br>
-    <input type="text" name="ticker" required><br><br>
+    <input type="text" name="ticker" value="{{ form_data.ticker if form_data else '' }}" required><br><br>
 
     <label>Buy Price</label><br>
-    <input type="number" step="0.01" name="buy_price" required><br><br>
+    <input type="number" step="0.01" name="buy_price" value="{{ form_data.buy_price if form_data else '' }}" required><br><br>
 
     <label>Instrument Type</label><br>
-    <select name="instrument_type" required>
-        <option value="stock">Stock</option>
-        <option value="option">Option</option>
+    <select name="instrument_type" id="instrument_type" required onchange="toggleOptionFields()">
+        <option value="stock" {% if form_data and form_data.instrument_type == "stock" %}selected{% endif %}>Stock</option>
+        <option value="option" {% if form_data and form_data.instrument_type == "option" %}selected{% endif %}>Option</option>
     </select><br><br>
 
     <label>Shares / Contracts</label><br>
-    <input type="number" step="0.01" name="shares" required><br><br>
+    <input type="number" step="0.01" name="shares" value="{{ form_data.shares if form_data else '' }}" required><br><br>
 
     <label>Status</label><br>
     <select name="status" required>
-        <option value="open">Open</option>
-        <option value="closed">Closed</option>
+        <option value="open" {% if form_data and form_data.status == "open" %}selected{% endif %}>Open</option>
+        <option value="closed" {% if form_data and form_data.status == "closed" %}selected{% endif %}>Closed</option>
     </select><br><br>
 
     <label>Sell Price (only if closed)</label><br>
-    <input type="number" step="0.01" name="sell_price"><br><br>
+    <input type="number" step="0.01" name="sell_price" value="{{ form_data.sell_price if form_data else '' }}"><br><br>
 
-    <label>Option Type (call/put, only if option)</label><br>
-    <input type="text" name="option_type"><br><br>
+    <div id="option_fields" style="display: {% if form_data and form_data.instrument_type == 'option' %}block{% else %}none{% endif %};">
+        <label>Option Type (call/put)</label><br>
+        <input type="text" name="option_type" value="{{ form_data.option_type if form_data else '' }}"><br><br>
 
-    <label>Strike Price (only if option)</label><br>
-    <input type="number" step="0.01" name="strike_price"><br><br>
+        <label>Strike Price</label><br>
+        <input type="number" step="0.01" name="strike_price" value="{{ form_data.strike_price if form_data else '' }}"><br><br>
 
-    <label>Expiration YYYY-MM-DD (only if option)</label><br>
-    <input type="text" name="expiration"><br><br>
+        <label>Expiration YYYY-MM-DD</label><br>
+        <input type="text" name="expiration" value="{{ form_data.expiration if form_data else '' }}"><br><br>
+    </div>
 
     <button type="submit">Add Trade</button>
 </form>
+
+<script>
+function toggleOptionFields() {
+    const instrumentType = document.getElementById("instrument_type").value;
+    const optionFields = document.getElementById("option_fields");
+    optionFields.style.display = instrumentType === "option" ? "block" : "none";
+}
+</script>
 {% endblock %}
